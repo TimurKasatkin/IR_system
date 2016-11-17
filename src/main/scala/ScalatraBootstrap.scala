@@ -1,7 +1,7 @@
-package gui
-
-import org.scalatra.LifeCycle
 import javax.servlet.ServletContext
+
+import controller.MainController
+import org.scalatra.LifeCycle
 
 /**
   * Created by marat on 17.11.2016.
@@ -9,6 +9,6 @@ import javax.servlet.ServletContext
 class ScalatraBootstrap extends LifeCycle {
   override def init(context: ServletContext) {
     // Mount servlets.
-    context.mount(new MainServlet, "/*")
+    context.mount(new MainController, "/*")
   }
 }
