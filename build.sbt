@@ -2,22 +2,15 @@ name := "IR_system"
 
 version := "1.0"
 
-scalaVersion := "2.12.0"
-
-resolvers += "OSS Sonatype" at "https://repo1.maven.org/maven2/"
+scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
-	//Testing
-	"org.scalatest" %% "scalatest" % "3.0.0" % "test",
+	//Scalatra
+	"org.scalatra" % "scalatra_2.10" % "2.4.1",
+	"javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
 
-	"edu.stanford.nlp" % "stanford-parser" % "3.6.0",
-	"edu.stanford.nlp" % "stanford-corenlp" % "3.6.0",
-
-	"org.scalanlp" % "chalk" % "1.3.0",
-
-	//Breeze
-	"org.scalanlp" % "breeze_2.10" % "0.12",
-	"org.scalanlp" % "breeze-natives_2.10" % "0.12"
-//	"org.scalanlp" % "breeze-viz_2.10" % "0.12"
 )
+
+enablePlugins(JettyPlugin)
+
 
