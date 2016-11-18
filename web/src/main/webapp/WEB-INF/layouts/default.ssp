@@ -1,16 +1,15 @@
 <%@ val body:String %>
 <html>
 <head>
-    <title>IR</title>
-    <style type="text/css">
-        body {
-        padding-top: 60px;
-        }
-    </style>
-    </head>
-    <body>
-        <div class="container">
-        <%= unescape(body) %>
-        </div>
-    </body>
+<title>IR search</title>
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+<link rel="stylesheet" href="css/bootstrap-theme.css" type="text/css">
+    <script type="text/javascript" href="js/bootstrap.js"></script>
+</head>
+<body>
+    <div class="container">
+    <%= unescape(body) %>
+    </div>
+</body>
 </html>
