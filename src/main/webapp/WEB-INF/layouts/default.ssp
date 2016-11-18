@@ -1,0 +1,16 @@
+<%@ val body:String %>
+<html>
+<head>
+    <title>IR</title>
+    <style type="text/css">
+        body {
+        padding-top: 60px;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+        <%= unescape(body) %>
+        </div> <!-- /container -->
+    </body>
+</html>

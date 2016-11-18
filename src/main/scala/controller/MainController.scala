@@ -1,10 +1,12 @@
 package controller
 
 import org.scalatra._
+import org.scalatra.scalate.ScalateSupport
 
-class MainController extends ScalatraServlet {
+class MainController extends ScalatraServlet with ScalateSupport {
 
   get("/") {
-    "Helloaaa"
+    contentType="text/html"
+    layoutTemplate("/WEB-INF/view/index.ssp")
   }
 }
