@@ -1,0 +1,4 @@
+<form method="get" action="/search">
+<input name="query" type="text" style="width: 100%;"/>
+<input type="submit"/>
+</form>

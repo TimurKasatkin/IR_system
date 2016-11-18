@@ -11,6 +11,6 @@
     <body>
         <div class="container">
         <%= unescape(body) %>
-        </div> <!-- /container -->
+        </div>
     </body>
 </html>

@@ -1,0 +1,2 @@
+<%@ val query: String %>
+<h1><%= query %></h1>
