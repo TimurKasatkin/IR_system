@@ -8,7 +8,11 @@ Keys.`package` := {
 }
 
 lazy val commonSettings = Seq(
-  scalaVersion := "2.11.6"
+  scalaVersion := "2.11.6",
+  libraryDependencies ++= Seq(
+    "org.slf4j" % "slf4j-log4j12" % "1.7.21",
+    "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+  )
 )
 
 lazy val parent = project in file(".") aggregate(crawler, core, web) settings (commonSettings: _*) settings Seq(
@@ -24,7 +28,10 @@ lazy val crawler = project in file("./crawler") settings (commonSettings: _*) se
 lazy val core = project in file("./core") dependsOn crawler settings (commonSettings: _*) settings Seq(
   name := "IR-core",
   version := "1.0"
-)
+) settings(libraryDependencies ++= Seq(
+	"edu.stanford.nlp" % "stanford-corenlp" % "3.6.0",
+	"edu.stanford.nlp" % "stanford-corenlp" % "3.6.0" classifier "models"
+))
 
 lazy val web = project in file("./web") settings (commonSettings: _*) settings Seq(
   name := "IR-web",
