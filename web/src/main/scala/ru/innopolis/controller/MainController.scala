@@ -7,6 +7,10 @@ import ru.innopolis._
 class MainController extends ScalatraServlet with ScalateSupport {
   private val engine: SearchEngine = null
 
+  get("/") {
+    redirect("/index")
+  }
+
   get("/index") {
     contentType = "text/html"
     ssp("/WEB-INF/view/index.ssp")
