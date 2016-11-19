@@ -8,6 +8,12 @@
 }
 
 .search-name {
-    color: rebeccapurple;
+    width: 200px;
+    text-decoration: none;
+    color: #995033;
     font-weight: 700;
+}
+
+.search-name:hover {
+    text-decoration: none;
 }
