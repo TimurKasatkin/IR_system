@@ -1,2 +1,22 @@
 <%@ val query: String %>
-<h1><%= query %></h1>
+<a href="/index"><h1 class="search-name">Gooble</h1></a>
+<form method="get" action="/search" style="width: 100%; text-align: center;">
+    <div class="row">
+    <div class="col-lg-9">
+        <div class="input-group input-group-lg">
+            <input type="text" class="form-control" placeholder="Search query..." name="query" value="<%= query %>">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">Search</button>
+                </span>
+            </div><!-- /input-group -->
+        </div><!-- /.col-lg-6 -->
+    </div><!-- /.row -->
+    <div class="col-lg-3"></div>
+</form>
+#for (i <- 1 to 10)
+    <a href="#"><h3>Hello world. How are you? I'm fine, thank you.</h3></a>
+    <p>Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you.
+    Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you.
+    Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you.
+    Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you. </p>
+#end

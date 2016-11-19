@@ -2,3 +2,12 @@
     margin: 0;
     padding: 0;
 }
+
+.container {
+    padding: 20px;
+}
+
+.search-name {
+    color: rebeccapurple;
+    font-weight: 700;
+}

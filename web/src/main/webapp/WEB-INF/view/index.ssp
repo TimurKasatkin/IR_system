@@ -1,4 +1,15 @@
-<form method="get" action="/search">
-<input name="query" type="text" style="width: 100%;"/>
-<input type="submit"/>
+<form method="get" action="/search" style="width: 100%; text-align: center;">
+    <div class="row" style="margin-top: 300px;">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
+            <h1 class="search-name">Gooble</h1>
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" placeholder="Search query..." name="query">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">Search</button>
+                    </span>
+                </div><!-- /input-group -->
+            </div><!-- /.col-lg-6 -->
+    </div><!-- /.row -->
+    <div class="col-lg-3"></div>
 </form>
