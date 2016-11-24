@@ -8,6 +8,6 @@ package ru.innopolis.ir.project.core.preprocessing
   */
 object QueryNormalizer {
 
-	def apply(query: String): List[String] = StringNormalizer(query).distinct
+	def apply(query: String): List[String] = StringNormalizer(query)
 
 }

@@ -2,8 +2,10 @@ package ru.innopolis.ir.project
 
 import java.io.File
 
+import scala.util.{Failure, Success, Try}
+
 /**
-  * @author Timur Kasatkin 
+  * @author Timur Kasatkin
   * @date 19.11.16.
   * @email aronwest001@gmail.com
   * @email t.kasatkin@innopolis.ru
@@ -23,6 +25,23 @@ package object core {
 		println("Elapsed time: " + (t1 - t0) + "ns")
 		result
 	}
+
+	def cleanly[A, B](resource: A)(cleanup: A => Unit)(doWork: A => B): Try[B] = {
+		try {
+			Success(doWork(resource))
+		} catch {
+			case e: Exception => Failure(e)
+		} finally {
+			try {
+				if (resource != null) {
+					cleanup(resource)
+				}
+			} catch {
+				case e: Exception => println(e) // should be logged
+			}
+		}
+	}
+
 
 
 }

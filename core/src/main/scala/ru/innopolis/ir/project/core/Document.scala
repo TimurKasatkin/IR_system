@@ -11,7 +11,7 @@ import scala.io.Source
   * @email aronwest001@gmail.com
   * @email t.kasatkin@innopolis.ru
   */
-case class Document(id: Int, title: String, url: URL, text: String)
+case class Document(id: Int, title: String, url: URL, `abstract`:String, text: String)
 
 object Document {
 
@@ -21,11 +21,13 @@ object Document {
 		val lines = Source.fromFile(docFile).getLines
 		val url = new URL(lines.next())
 		val title = lines.next()
+		val `abstract` = lines.takeWhile(_.trim.nonEmpty).mkString(" ")
 		Document(
 			id = docFile.getName.toInt,
 			title = title,
 			url = url,
-			text = lines.filterNot(_.trim.isEmpty).mkString(" ")
+			`abstract` = `abstract`,
+			text = `abstract` + " " + lines.filterNot(_.trim.isEmpty).mkString(" ")
 		)
 	}
 }

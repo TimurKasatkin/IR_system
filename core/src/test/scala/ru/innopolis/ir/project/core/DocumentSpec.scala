@@ -19,6 +19,7 @@ class DocumentSpec extends FlatSpec with Matchers {
 		result should have (
 			'id (1),
 			'title ("Test doc"),
+			'abstract ("I am a test doc!"),
 			'text ("I am a test doc! Yep, I have an empty line.")
 		)
 		result.url.toString shouldBe "https://en.wikipedia.org/wiki/maybe_exists"

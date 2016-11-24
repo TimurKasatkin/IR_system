@@ -43,18 +43,18 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 		)
 	}
 
-	def search(queryTerms: Iterable[String], numOfTopResults: Int = 100): List[SearchResult] = {
+	def search(queryTokens: Iterable[String], numOfTopResults: Int = 100): List[SearchResult] = {
 		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
 
-		val terms = queryTerms.filter(dictionary contains)
+		val tokens = queryTokens.filter(dictionary contains)
 
-		val queryTermTFs = terms.foldLeft(Map.empty[String, Int].withDefaultValue(0)) {
+		val queryTermTFs = tokens.foldLeft(Map.empty[String, Int].withDefaultValue(0)) {
 			(count, term) => count + (term -> (count(term) + 1))
 		}
 
 		val queryTermsWeights = (queryTermTFs.keys.view zip queryTFScheme(queryTermTFs.values.view)).toMap
 
-		for ((term, termInfo) <- terms.view.map(t => (t, dictionary(t)))) {
+		for ((term, termInfo) <- tokens.toSet[String].view.map(t => (t, dictionary(t)))) {
 			val queryWeight = queryTermsWeights(term) * queryDFScheme(termInfo.docFrequency, docsCount)
 			val postings = termInfo.postings
 			for ((docId, docWeight) <- postings.view.map(_.docId) zip docTFScheme(postings.view.map(_.termFrequency))) {

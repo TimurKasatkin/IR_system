@@ -19,7 +19,7 @@ object NaturalTFScheme extends TermFrequencyScheme {
 }
 
 object LogarithmicTFScheme extends TermFrequencyScheme {
-	override def apply(tfs: Iterable[Int]): Iterable[Double] = tfs.map(tf => 1 + math.log(tf | 1))
+	override def apply(tfs: Iterable[Int]): Iterable[Double] = tfs.map(tf => 1 + math.log(tf))
 }
 
 class NormalizedTFScheme(alpha: Float = 0.5f) extends TermFrequencyScheme {
