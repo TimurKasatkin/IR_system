@@ -1,18 +1,21 @@
 package ru.innopolis.ir.project.core.index
 
+import ru.innopolis.ir.project.core.index.weighting._
 import ru.innopolis.ir.project.core.preprocessing.NormalizedDocument
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 /**
-  * @author Timur Kasatkin 
+  * @author Timur Kasatkin
   * @date 18.11.16.
   * @email aronwest001@gmail.com
   * @email t.kasatkin@innopolis.ru
   */
-class VectorSpaceModelIndex(docs: Iterable[NormalizedDocument]) {
-
+class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
+                                    docTFScheme: TermFrequencyScheme = LogarithmicTFScheme,
+                                    queryTFScheme: TermFrequencyScheme = BooleanTFScheme,
+                                    queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme) {
 
 	private val (dictionary, docLengths, docsCount) = {
 
@@ -33,19 +36,29 @@ class VectorSpaceModelIndex(docs: Iterable[NormalizedDocument]) {
 
 
 		((termToDocFrequency zip termToPostingsList.values)
-				.map { case ((term, docFrequency), postingsList) => (term, TermInfo(docFrequency, postingsList.toList)) }
-				.toMap,
+			.map { case ((term, docFrequency), postingsList) => (term, TermInfo(docFrequency, postingsList.toList)) }
+			.toMap,
 			docLengths.mapValues(math.sqrt(_)),
 			docsCount
-			)
+		)
 	}
 
 	def search(queryTerms: Iterable[String], numOfTopResults: Int = 100): List[SearchResult] = {
 		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
 
-		for (termInfo <- queryTerms.view.map(dictionary(_))) {
-			for (posting <- termInfo.postings) {
-				scores(posting.docId) += docWeight(posting.termFrequency, termInfo.docFrequency)
+		val terms = queryTerms.filter(dictionary contains)
+
+		val queryTermTFs = terms.foldLeft(Map.empty[String, Int].withDefaultValue(0)) {
+			(count, term) => count + (term -> (count(term) + 1))
+		}
+
+		val queryTermsWeights = (queryTermTFs.keys.view zip queryTFScheme(queryTermTFs.values.view)).toMap
+
+		for ((term, termInfo) <- terms.view.map(t => (t, dictionary(t)))) {
+			val queryWeight = queryTermsWeights(term) * queryDFScheme(termInfo.docFrequency, docsCount)
+			val postings = termInfo.postings
+			for ((docId, docWeight) <- postings.view.map(_.docId) zip docTFScheme(postings.view.map(_.termFrequency))) {
+				scores(docId) += docWeight * queryWeight
 			}
 		}
 
@@ -63,15 +76,8 @@ class VectorSpaceModelIndex(docs: Iterable[NormalizedDocument]) {
 		result.toList
 	}
 
-	private def docWeight(tf: Int, df: Int) = logarithmicTermFrequency(tf) * invertedDocFrequency(df)
-
-	private def logarithmicTermFrequency(tf: Int): Double = 1 + math.log(tf | 1)
-
-	private def invertedDocFrequency(df: Int): Double = math.log(docsCount.toDouble / df)
-
 	private case class TermInfo(docFrequency: Int, postings: List[Posting])
 
 	private case class Posting(docId: Int, termFrequency: Int)
-
 
 }
