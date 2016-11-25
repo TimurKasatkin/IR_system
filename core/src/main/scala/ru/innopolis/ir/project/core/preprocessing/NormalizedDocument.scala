@@ -3,7 +3,7 @@ package ru.innopolis.ir.project.core.preprocessing
 import java.io._
 import java.net.URL
 
-import ru.innopolis.ir.project.core.cleanly
+import ru.innopolis.ir.project.core.utils.using
 
 import scala.io.Source
 
@@ -17,33 +17,44 @@ import scala.io.Source
   * @param termToFrequencyMap map in format (term, term's frequency)
   */
 case class NormalizedDocument(id: Int, title: String, url: URL, `abstract`: String, termToFrequencyMap: Map[String, Int]) {
+
+	def saveToFile(directory: File): Unit = {
+		using(new BufferedWriter(new FileWriter(new File(directory, id.toString))))(_.close) {
+			_.write(this.toString)
+		}
+	}
+
 	override def toString: String = {
+		import NormalizedDocument.TermTfSeparator
 		s"""$title
 		   |$url
 		   |${`abstract`}
-		   |${termToFrequencyMap.map { case (term, tf) => s"$term→$tf" } mkString " "}""".stripMargin
-	}
-
-	def saveToFile(directory: File): Unit = {
-		cleanly(new BufferedWriter(new FileWriter(new File(directory, id.toString))))(_.close) { writer =>
-			writer.write(this.toString)
-		}
+		   |${termToFrequencyMap.map { case (term, tf) => s"$term$TermTfSeparator$tf" } mkString " "}""".stripMargin
 	}
 
 }
 
 object NormalizedDocument {
+
+	private[preprocessing] val TermTfSeparator = '→'
+
 	def fromFile(f: File): NormalizedDocument = {
-		val lines = Source.fromFile(f).getLines
-		val title = lines.next
-		val url = new URL(lines.next)
-		val `abstract` = lines.next
-		val termToFrequencyMap = lines.next.split(" ").view
-			.map(_.split("→"))
-			.map(s => (s(0), s(1).toInt))
-			.toMap
+		val linesIterator = Source.fromFile(f).getLines
+		val id = f.getName.toInt
+		val title = linesIterator.next
+		val url = new URL(linesIterator.next)
+		val `abstract` = if (linesIterator.hasNext) linesIterator.next else ""
+		//		println(s"Reading doc $id of title '$title'")
+		val termToFrequencyMap = if (linesIterator.hasNext) {
+			linesIterator.next.split(" ").view
+				.map(_.split(TermTfSeparator))
+				.map(s => {
+					(s(0), s(1).toInt)
+				})
+				.toMap
+		} else Map.empty[String, Int]
 		NormalizedDocument(
-			id = f.getName.toInt,
+			id = id,
 			title = title,
 			url = url,
 			`abstract` = `abstract`,

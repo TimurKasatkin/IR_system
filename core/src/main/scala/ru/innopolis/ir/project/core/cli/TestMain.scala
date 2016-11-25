@@ -1,7 +1,9 @@
-package ru.innopolis.ir.project.core
+package ru.innopolis.ir.project.core.cli
 
 import ru.innopolis.ir.project.core.index._
 import ru.innopolis.ir.project.core.preprocessing.{DocumentNormalizer, QueryNormalizer}
+import ru.innopolis.ir.project.core.{Document, readDocumentsFrom}
+import ru.innopolis.ir.project.core.utils.time
 
 /**
   * @author Timur Kasatkin

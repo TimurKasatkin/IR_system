@@ -19,8 +19,10 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 
 	private val (dictionary, docLengths, docsCount) = {
 
-		val termToDocFrequency: mutable.Map[String, Int] = mutable.LinkedHashMap.empty.withDefaultValue(0)
-		val termToPostingsList: mutable.Map[String, ListBuffer[Posting]] = mutable.LinkedHashMap.empty.withDefault(_ => ListBuffer.empty[Posting])
+		val termToDocFrequency: mutable.Map[String, Int] =
+			mutable.LinkedHashMap.empty.withDefaultValue(0)
+		val termToPostingsList: mutable.Map[String, ListBuffer[Posting]] =
+			mutable.LinkedHashMap.empty.withDefault(_ => ListBuffer.empty[Posting])
 		val docLengths: mutable.Map[Int, Int] = mutable.Map.empty.withDefaultValue(0)
 
 		var docsCount: Int = 0
@@ -36,8 +38,9 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 
 
 		((termToDocFrequency zip termToPostingsList.values)
-			.map { case ((term, docFrequency), postingsList) => (term, TermInfo(docFrequency, postingsList.toList)) }
-			.toMap,
+			.map {
+				case ((term, docFrequency), postingsList) => (term, TermInfo(docFrequency, postingsList.toList))
+			}.toMap,
 			docLengths.mapValues(math.sqrt(_)),
 			docsCount
 		)
@@ -80,4 +83,13 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 
 	private case class Posting(docId: Int, termFrequency: Int)
 
+}
+
+object VectorSpaceModelInMemoryIndex {
+	def apply(docs: Iterable[NormalizedDocument],
+	          docTFScheme: TermFrequencyScheme = LogarithmicTFScheme,
+	          queryTFScheme: TermFrequencyScheme = BooleanTFScheme,
+	          queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme)
+	: VectorSpaceModelInMemoryIndex =
+		new VectorSpaceModelInMemoryIndex(docs, docTFScheme, queryTFScheme, queryDFScheme)
 }

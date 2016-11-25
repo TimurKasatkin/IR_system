@@ -30,7 +30,8 @@ lazy val core = project in file("./core") dependsOn crawler settings (commonSett
   version := "1.0"
 ) settings(libraryDependencies ++= Seq(
 	"edu.stanford.nlp" % "stanford-corenlp" % "3.6.0",
-	"edu.stanford.nlp" % "stanford-corenlp" % "3.6.0" classifier "models"
+	"edu.stanford.nlp" % "stanford-corenlp" % "3.6.0" classifier "models",
+	"com.github.scopt" %% "scopt" % "3.5.0"
 ))
 
 lazy val web = project in file("./web") settings (commonSettings: _*) settings Seq(

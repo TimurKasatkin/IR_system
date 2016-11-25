@@ -74,7 +74,7 @@ class NormalizedDocumentSpec
 		lines.next shouldBe testDoc.title
 		lines.next shouldBe testDoc.url.toString
 		lines.next shouldBe testDoc.`abstract`
-		lines.next shouldBe (testDoc.termToFrequencyMap.map { case (term, tf) => s"$term→$tf" } mkString " ")
+		lines.next shouldBe (testDoc.termToFrequencyMap.map { case (term, tf) => s"$term${NormalizedDocument.TermTfSeparator}$tf" } mkString " ")
 	}
 
 	after {

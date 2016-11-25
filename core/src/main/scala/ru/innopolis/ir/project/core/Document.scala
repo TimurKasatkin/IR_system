@@ -18,16 +18,16 @@ object Document {
 	def fromFile(docPath: String): Document = fromFile(new File(docPath))
 
 	def fromFile(docFile: File): Document = {
-		val lines = Source.fromFile(docFile).getLines
-		val url = new URL(lines.next())
-		val title = lines.next()
-		val `abstract` = lines.takeWhile(_.trim.nonEmpty).mkString(" ")
+		val linesIterator = Source.fromFile(docFile).getLines
+		val url = new URL(linesIterator.next())
+		val title = linesIterator.next()
+		val `abstract` = linesIterator.takeWhile(_.trim.nonEmpty).mkString(" ")
 		Document(
 			id = docFile.getName.toInt,
 			title = title,
 			url = url,
 			`abstract` = `abstract`,
-			text = `abstract` + " " + lines.filterNot(_.trim.isEmpty).mkString(" ")
+			text = `abstract` + " " + linesIterator.filterNot(_.trim.isEmpty).mkString(" ")
 		)
 	}
 }
