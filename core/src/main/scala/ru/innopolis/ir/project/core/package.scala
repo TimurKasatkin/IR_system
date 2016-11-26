@@ -2,6 +2,8 @@ package ru.innopolis.ir.project
 
 import java.io.File
 
+import ru.innopolis.ir.project.core.preprocessing.NormalizedDocument
+
 /**
   * @author Timur Kasatkin
   * @date 19.11.16.
@@ -14,6 +16,10 @@ package object core {
 		var docFiles: Array[File] = new File(dir).listFiles.sorted
 		docFiles = if (maxCount > 0) docFiles take maxCount else docFiles
 		docFiles map Document.fromFile
+	}
+
+	def readNormalizedDocumentsFrom(dir: String): Iterable[NormalizedDocument] = {
+		new File(dir).listFiles().view.map(NormalizedDocument.fromFile)
 	}
 
 
