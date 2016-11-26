@@ -81,8 +81,6 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 
 	private case class TermInfo(docFrequency: Int, postings: List[Posting])
 
-	private case class Posting(docId: Int, termFrequency: Int)
-
 }
 
 object VectorSpaceModelInMemoryIndex {
