@@ -136,11 +136,12 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 	}
 
 	/**
-	  * @param queryTokens query represented as a list of normalized tokens (not term, which it should contain repetitions)
+	  * @param queryTokens query represented as a list of normalized tokens (not terms, so it should contain repetitions)
 	  * @param pageNumber  current page number starting from 1
 	  * @param pageLimit   max number of results per page
-	  * @return search results each describing corresponding docId and doc's score
-	  *         and total number of results' pages
+	  * @return tuple containing:
+	  *         1) search results each describing docId and corresponding doc's score;
+	  *         2) total number of results
 	  */
 	def search(queryTokens: Iterable[String], pageNumber: Int, pageLimit: Int = 100): (List[SearchResult], Int) = {
 		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
@@ -155,7 +156,6 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 			for ((term, termInfo) <- tokens.toSet[String].view.map(t => (t, dictionary(t)))) {
 				val queryWeight = queryTermsWeights(term) * queryDFScheme(termInfo.docFrequency, docsCount)
 				val postings = in.readPostings(termInfo.postingsByteOffset, termInfo.postingsByteLength)
-				println(postings.mkString(" "))
 				for ((docId, docWeight) <- postings.view.map(_.docId) zip docTFScheme(postings.view.map(_.termFrequency))) {
 					scores(docId) += docWeight * queryWeight
 				}
@@ -178,7 +178,7 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 			i += 1
 		}
 
-		(result.toList, math.ceil(scores.size.toDouble / pageLimit).toInt)
+		(result.toList, scores.size)
 	}
 
 	private implicit class InputStreamExtension(in: RandomAccessFile) {

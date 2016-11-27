@@ -47,7 +47,7 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 		)
 	}
 
-	def search(queryTokens: Iterable[String], numOfTopResults: Int = 100): List[SearchResult] = {
+	def search(queryTokens: Iterable[String], pageNumber: Int, pageLimit: Int = 100): (List[SearchResult], Int) = {
 		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
 
 		val tokens = queryTokens.filter(dictionary contains)
@@ -59,7 +59,6 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 		for ((term, termInfo) <- tokens.toSet[String].view.map(t => (t, dictionary(t)))) {
 			val queryWeight = queryTermsWeights(term) * queryDFScheme(termInfo.docFrequency, docsCount)
 			val postings = termInfo.postings
-			println(postings.mkString(" "))
 			for ((docId, docWeight) <- postings.view.map(_.docId) zip docTFScheme(postings.view.map(_.termFrequency))) {
 				scores(docId) += docWeight * queryWeight
 			}
@@ -70,13 +69,18 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 
 		val result: ListBuffer[SearchResult] = ListBuffer.empty
 		var i = 0
-		while (scoresHeap.nonEmpty && i < numOfTopResults) {
+		while (scoresHeap.nonEmpty && i < (pageNumber - 1) * pageLimit) {
+			scoresHeap.dequeue()
+			i += 1
+		}
+		i = 0
+		while (scoresHeap.nonEmpty && i < pageLimit) {
 			val (docId, score) = scoresHeap.dequeue()
 			result += SearchResult(docId, score)
 			i += 1
 		}
 
-		result.toList
+		(result.toList, scores.size)
 	}
 
 	private case class TermInfo(docFrequency: Int, postings: List[Posting])

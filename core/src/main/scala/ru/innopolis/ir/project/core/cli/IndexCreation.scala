@@ -52,7 +52,7 @@ object IndexCreation {
 
 					val (results, totalCount) = index.search(QueryNormalizer(query), 1)
 
-					println(s"Total number of pages: $totalCount")
+					println(s"Total number of relevant documents: $totalCount")
 					results.map(res => (res.docId, docIdToTitle(res.docId), res.score)).foreach(println)
 				}
 				config.indexFile.deleteOnExit()

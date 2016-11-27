@@ -39,7 +39,9 @@ object InMemoryIndexCreation {
 						s"""${"=" * 40}
 						   |Results for query '$query'
 						   |${"=" * 40}""".stripMargin)
-					val results = index.search(QueryNormalizer(query))
+					val (results, totalCount) = index.search(QueryNormalizer(query), 1)
+
+					println(s"Total number of relevant documents: $totalCount")
 					results.map(res => (res.docId, docIdToTitle(res.docId), res.score)).foreach(println)
 				}
 			case None =>
