@@ -1,4 +1,7 @@
+#import(ru.innopolis.service.HumanSearchResult)
 <%@ val query: String %>
+<%@ val page: Integer %>
+<%@ import val results: List[HumanSearchResult] %>
 <a href="/index"><h1 class="search-name">Gooble</h1></a>
 <form method="get" action="/search" style="width: 100%; text-align: center;">
     <div class="row">
@@ -13,26 +16,23 @@
     </div><!-- /.row -->
     <div class="col-lg-3"></div>
 </form>
-#for (i <- 1 to 10)
-    <a href="#"><h3>Hello world. How are you? I'm fine, thank you.</h3></a>
-    <p>Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you.
-    Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you.
-    Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you.
-    Hello world. How are you? I'm fine, thank you. Hello world. How are you? I'm fine, thank you. </p>
+#for (result <- results)
+    <a href="${result.link}"><h3>${result.title}</h3></a>
+    <p>${result.docAbstract}</p>
 #end
 <nav aria-label="">
 <ul class="pagination">
-    <li class=""><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
-    <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>
-    <li class=""><a href="#">2 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">3 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">4 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">5 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">6 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">7 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">8 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">9 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#">10 <span class="sr-only"></span></a></li>
-    <li class=""><a href="#" aria-label="Previous"><span aria-hidden="true">	&raquo;</span></a></li>
+    <li class=""><a href="/search?query=${query}&page=${math.max(page-1, 1)}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+    <li class="#if (page == 1) active #end"><a href="/search?query=${query}&page=1">1 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 2) active #end"><a href="/search?query=${query}&page=2">2 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 3) active #end"><a href="/search?query=${query}&page=3">3 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 4) active #end"><a href="/search?query=${query}&page=4">4 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 5) active #end"><a href="/search?query=${query}&page=5">5 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 6) active #end"><a href="/search?query=${query}&page=6">6 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 7) active #end"><a href="/search?query=${query}&page=7">7 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 8) active #end"><a href="/search?query=${query}&page=8">8 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 9) active #end"><a href="/search?query=${query}&page=9">9 <span class="sr-only"></span></a></li>
+    <li class="#if (page == 10) active #end"><a href="/search?query=${query}&page=10">10 <span class="sr-only"></span></a></li>
+    <li class=""><a href="/search?query=${query}&page=${math.min(page+1, 10)}" aria-label="Previous"><span aria-hidden="true">	&raquo;</span></a></li>
 </ul>
 </nav>
