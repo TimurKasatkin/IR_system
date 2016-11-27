@@ -23,7 +23,10 @@ lazy val parent = project in file(".") aggregate(crawler, core, web) settings (c
 lazy val crawler = project in file("./crawler") settings (commonSettings: _*) settings Seq(
   name := "IR-crawler",
   version := "1.0"
-)
+) settings(libraryDependencies ++= Seq(
+  "net.ruippeixotog" %% "scala-scraper" % "1.1.0",
+  "com.github.scopt" %% "scopt" % "3.5.0"
+))
 
 lazy val core = project in file("./core") dependsOn crawler settings (commonSettings: _*) settings Seq(
   name := "IR-core",
