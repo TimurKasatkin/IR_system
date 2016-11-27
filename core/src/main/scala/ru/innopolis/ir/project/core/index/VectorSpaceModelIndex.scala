@@ -2,7 +2,8 @@ package ru.innopolis.ir.project.core.index
 
 import java.io._
 
-import ru.innopolis.ir.project.core.utils.using
+import ru.innopolis.ir.project.core.index.weighting._
+import ru.innopolis.ir.project.core.utils.{IteratorExtension, StringIterableExtension, using}
 
 import scala.collection.immutable.SortedMap
 import scala.collection.mutable
@@ -20,9 +21,12 @@ import scala.io.Source
   */
 @SerialVersionUID(123L)
 class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
-                            postingsFile: File,
+                            val postingsFile: File,
                             numOfTriplesPerBlock: Int = 1000000,
-                            removeBlocksFiles: Boolean = true) extends Serializable {
+                            removeBlocksFiles: Boolean = true,
+                            docTFScheme: TermFrequencyScheme = LogarithmicTFScheme,
+                            queryTFScheme: TermFrequencyScheme = BooleanTFScheme,
+                            queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme) extends Serializable {
 
 	val VSM = VectorSpaceModelIndex
 
@@ -103,7 +107,7 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 					val postingsStrBytes = termInfoToSave.postings
 						.map(postingTuple2string)
 						.mkString(" ")
-						.getBytes("UTF-8")
+						.getBytes(VSM.Charset)
 					out.write(postingsStrBytes)
 
 					dictionary(termToSave) = TermInfo(
@@ -123,10 +127,68 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 		}
 
 		if (removeBlocksFiles) {
-			blocksFiles.foreach { _.delete() }
+			blocksFiles.foreach {
+				_.delete()
+			}
 		}
 
 		(dictionary, docLengths, docsCount)
+	}
+
+	/**
+	  * @param queryTokens query represented as a list of normalized tokens (not term, which it should contain repetitions)
+	  * @param pageNumber  current page number starting from 1
+	  * @param pageLimit   max number of results per page
+	  * @return search results each describing corresponding docId and doc's score
+	  *         and total number of results' pages
+	  */
+	def search(queryTokens: Iterable[String], pageNumber: Int, pageLimit: Int = 100): (List[SearchResult], Int) = {
+		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
+
+		val tokens = queryTokens.filter(dictionary contains)
+
+		val queryTermTFs = tokens.wordCounts
+
+		val queryTermsWeights = (queryTermTFs.keys.view zip queryTFScheme(queryTermTFs.values.view)).toMap
+
+		using(new RandomAccessFile(postingsFile, "r"))(_.close()) { in =>
+			for ((term, termInfo) <- tokens.toSet[String].view.map(t => (t, dictionary(t)))) {
+				val queryWeight = queryTermsWeights(term) * queryDFScheme(termInfo.docFrequency, docsCount)
+				val postings = in.readPostings(termInfo.postingsByteOffset, termInfo.postingsByteLength)
+				println(postings.mkString(" "))
+				for ((docId, docWeight) <- postings.view.map(_.docId) zip docTFScheme(postings.view.map(_.termFrequency))) {
+					scores(docId) += docWeight * queryWeight
+				}
+			}
+		}
+
+		val scoresHeap: mutable.PriorityQueue[(Int, Double)] = mutable.PriorityQueue()(Ordering.by(_._2))
+		scoresHeap ++= scores.view.map { case (docId, score) => (docId, score / docLengths(docId)) }
+
+		val result: ListBuffer[SearchResult] = ListBuffer.empty
+		var i = 0
+		while (scoresHeap.nonEmpty && i < (pageNumber - 1) * pageLimit) {
+			scoresHeap.dequeue()
+			i += 1
+		}
+		i = 0
+		while (scoresHeap.nonEmpty && i < pageLimit) {
+			val (docId, score) = scoresHeap.dequeue()
+			result += SearchResult(docId, score)
+			i += 1
+		}
+
+		(result.toList, math.ceil(scores.size.toDouble / pageLimit).toInt)
+	}
+
+	private implicit class InputStreamExtension(in: RandomAccessFile) {
+		def readPostings(offset: Int, length: Int): Iterable[Posting] = {
+			val postingsBytesBuffer = new Array[Byte](length)
+			in.skipBytes(offset)
+			in.read(postingsBytesBuffer)
+			in.seek(0)
+			new String(postingsBytesBuffer, VSM.Charset).toPostings
+		}
 	}
 
 	private implicit class StringExtension(str: String) {
@@ -142,14 +204,17 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 
 			(term, InterimTermInfo(docFrequency, postings))
 		}
+
+		def toPostings: Iterable[Posting] = {
+			str.split(' ')
+				.map(_.split(VSM.DocIdTermFrequencySeparator))
+				.map(arr => Posting(arr(0).toInt, arr(1).toInt))
+				.toList
+		}
 	}
 
 	private implicit def postingTuple2string(t: (Int, Int)): String =
 		s"${t._1}${VSM.DocIdTermFrequencySeparator}${t._2}"
-
-	private implicit class IteratorExtensions[A](iter: Iterator[A]) {
-		def doIfHasNext(f: A => Unit): Unit = if (iter.hasNext) f(iter.next())
-	}
 
 	private case class TermInfo(docFrequency: Int, postingsByteOffset: Int, postingsByteLength: Int)
 
@@ -176,12 +241,7 @@ object VectorSpaceModelIndex {
 
 	private final val DocIdTermFrequencySeparator: Char = '→'
 
-	def main(args: Array[String]): Unit = {
-		val index = VectorSpaceModelIndex(
-			List(("lol1", 2, 5), ("lol2", 5, 4), ("lol4", 2, 8), ("lol4", 5, 3), ("lol5", 5, 1)).iterator,
-			new File("/hdd/dev/jvm/scala/workspace/IR_data/index_file"),
-			removeBlocksFiles = false)
-	}
+	private final val Charset = java.nio.charset.Charset.forName("UTF-8")
 
 	def apply(termDocIdTfTriples: Iterator[(String, Int, Int)],
 	          postingsFile: File,

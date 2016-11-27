@@ -2,6 +2,7 @@ package ru.innopolis.ir.project.core.index
 
 import ru.innopolis.ir.project.core.index.weighting._
 import ru.innopolis.ir.project.core.preprocessing.NormalizedDocument
+import ru.innopolis.ir.project.core.utils.StringIterableExtension
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -51,15 +52,14 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 
 		val tokens = queryTokens.filter(dictionary contains)
 
-		val queryTermTFs = tokens.foldLeft(Map.empty[String, Int].withDefaultValue(0)) {
-			(count, term) => count + (term -> (count(term) + 1))
-		}
+		val queryTermTFs = tokens.wordCounts
 
 		val queryTermsWeights = (queryTermTFs.keys.view zip queryTFScheme(queryTermTFs.values.view)).toMap
 
 		for ((term, termInfo) <- tokens.toSet[String].view.map(t => (t, dictionary(t)))) {
 			val queryWeight = queryTermsWeights(term) * queryDFScheme(termInfo.docFrequency, docsCount)
 			val postings = termInfo.postings
+			println(postings.mkString(" "))
 			for ((docId, docWeight) <- postings.view.map(_.docId) zip docTFScheme(postings.view.map(_.termFrequency))) {
 				scores(docId) += docWeight * queryWeight
 			}

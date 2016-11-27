@@ -12,14 +12,20 @@ import ru.innopolis.ir.project.core.preprocessing.NormalizedDocument
   */
 package object core {
 
-	def readDocumentsFrom(dir: String, maxCount: Int = 0): Array[Document] = {
-		var docFiles: Array[File] = new File(dir).listFiles.sorted
+	def readDocumentsFrom(dir: String, maxCount: Int = 0): Array[Document] =
+		readDocumentsFrom(new File(dir), maxCount)
+
+	def readDocumentsFrom(dir: File, maxCount: Int): Array[Document] = {
+		var docFiles: Array[File] = dir.listFiles.sorted
 		docFiles = if (maxCount > 0) docFiles take maxCount else docFiles
 		docFiles map Document.fromFile
 	}
 
-	def readNormalizedDocumentsFrom(dir: String): Iterable[NormalizedDocument] = {
-		new File(dir).listFiles().view.map(NormalizedDocument.fromFile)
+	def readNormalizedDocumentsFrom(dir: String): Iterable[NormalizedDocument] =
+		readNormalizedDocumentsFrom(new File(dir))
+
+	def readNormalizedDocumentsFrom(dir: File): Iterable[NormalizedDocument] = {
+		dir.listFiles().view.map(NormalizedDocument.fromFile)
 	}
 
 

@@ -3,6 +3,7 @@ package ru.innopolis.ir.project.core.preprocessing
 import java.io.File
 
 import ru.innopolis.ir.project.core.Document
+import ru.innopolis.ir.project.core.utils.StringIterableExtension
 
 /**
   * @author Timur Kasatkin
@@ -13,10 +14,7 @@ import ru.innopolis.ir.project.core.Document
 object DocumentNormalizer {
 
 	def apply(doc: Document): NormalizedDocument = {
-		val termToFrequency: Map[String, Int] = StringNormalizer(doc.text)
-			.foldLeft(Map.empty[String, Int].withDefaultValue(0)) { (count, word) =>
-				count + (word -> (count(word) + 1))
-			}
+		val termToFrequency: Map[String, Int] = StringNormalizer(doc.text).wordCounts
 		NormalizedDocument(
 			id = doc.id,
 			title = doc.title,
