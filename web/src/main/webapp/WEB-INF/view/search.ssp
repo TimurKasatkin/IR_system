@@ -2,6 +2,7 @@
 <%@ val query: String %>
 <%@ val page: Integer %>
 <%@ val pages: Integer %>
+<%@ val totalResults: Integer %>
 <%@ import val results: List[HumanSearchResult] %>
 <a href="/index"><h1 class="search-name">Gooble</h1></a>
 <form method="get" action="/search" style="width: 100%; text-align: center;">
@@ -17,6 +18,7 @@
     </div><!-- /.row -->
     <div class="col-lg-3"></div>
 </form>
+<i style="color: rgba(145, 145, 145, 0.99); width: 100%; margin-top: 5px; margin-bottom: 5px; font-weight: 600; float: left;">Total results: ${totalResults}</i>
 #for (result <- results)
     <a href="${result.link}"><h3>${result.title}</h3></a>
     <p>${result.docAbstract}</p>

@@ -22,8 +22,7 @@ class MainController extends ScalatraServlet with ScalateSupport {
     val currentPage = Integer.parseInt(params.getOrElse("page", "1"))
     if (query equals "") redirect("/index")
     val results = engine.search(query, currentPage)
-    val pages = results._2
     layoutTemplate("/WEB-INF/view/search.ssp", "query" -> query, "results" -> results._1,
-      "page" -> math.min(currentPage, pages), "pages" -> pages)
+      "page" -> math.min(currentPage, results._3), "pages" -> results._3, "totalResults" -> results._2)
   }
 }
