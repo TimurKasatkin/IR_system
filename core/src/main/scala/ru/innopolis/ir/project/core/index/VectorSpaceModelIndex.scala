@@ -132,7 +132,7 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 			}
 		}
 
-		(dictionary, docLengths, docsCount)
+		(dictionary, docLengths.mapValues(math.sqrt(_)), docsCount)
 	}
 
 	/**

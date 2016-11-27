@@ -55,6 +55,7 @@ object IndexCreation {
 					println(s"Total number of pages: $totalCount")
 					results.map(res => (res.docId, docIdToTitle(res.docId), res.score)).foreach(println)
 				}
+				config.indexFile.deleteOnExit()
 			case None =>
 		}
 	}
