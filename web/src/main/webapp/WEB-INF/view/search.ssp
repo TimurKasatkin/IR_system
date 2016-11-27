@@ -1,6 +1,7 @@
 #import(ru.innopolis.service.HumanSearchResult)
 <%@ val query: String %>
 <%@ val page: Integer %>
+<%@ val pages: Integer %>
 <%@ import val results: List[HumanSearchResult] %>
 <a href="/index"><h1 class="search-name">Gooble</h1></a>
 <form method="get" action="/search" style="width: 100%; text-align: center;">
@@ -23,16 +24,9 @@
 <nav aria-label="">
 <ul class="pagination">
     <li class=""><a href="/search?query=${query}&page=${math.max(page-1, 1)}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
-    <li class="#if (page == 1) active #end"><a href="/search?query=${query}&page=1">1 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 2) active #end"><a href="/search?query=${query}&page=2">2 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 3) active #end"><a href="/search?query=${query}&page=3">3 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 4) active #end"><a href="/search?query=${query}&page=4">4 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 5) active #end"><a href="/search?query=${query}&page=5">5 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 6) active #end"><a href="/search?query=${query}&page=6">6 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 7) active #end"><a href="/search?query=${query}&page=7">7 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 8) active #end"><a href="/search?query=${query}&page=8">8 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 9) active #end"><a href="/search?query=${query}&page=9">9 <span class="sr-only"></span></a></li>
-    <li class="#if (page == 10) active #end"><a href="/search?query=${query}&page=10">10 <span class="sr-only"></span></a></li>
-    <li class=""><a href="/search?query=${query}&page=${math.min(page+1, 10)}" aria-label="Previous"><span aria-hidden="true">	&raquo;</span></a></li>
+    #for (p <- 1 to pages)
+        <li class="#if (page == p) active #end"><a href="/search?query=${query}&page=${p}">${p} <span class="sr-only"></span></a></li>
+    #end
+    <li class=""><a href="/search?query=${query}&page=${math.min(page+1, pages)}" aria-label="Previous"><span aria-hidden="true">	&raquo;</span></a></li>
 </ul>
 </nav>
