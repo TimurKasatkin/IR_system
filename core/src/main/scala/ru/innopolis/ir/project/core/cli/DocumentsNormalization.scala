@@ -3,6 +3,7 @@ package ru.innopolis.ir.project.core.cli
 import java.io.File
 
 import ru.innopolis.ir.project.core.preprocessing.DocumentNormalizer
+import ru.innopolis.ir.project.core.utils.time
 
 /**
   * @author Timur Kasatkin 
@@ -23,7 +24,10 @@ object DocumentsNormalization {
 		}
 		parser.parse(args, Config()) match {
 			case Some(config) =>
-				DocumentNormalizer.normalizeAllFromAndSaveTo(config.sourceDocsFolder, config.processedSaveFolder)
+				time(DocumentNormalizer.normalizeAllFromAndSaveTo(
+					config.sourceDocsFolder,
+					config.processedSaveFolder
+				))
 			case None =>
 		}
 	}

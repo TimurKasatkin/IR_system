@@ -2,7 +2,7 @@ package ru.innopolis.ir.project.core.preprocessing
 
 import java.io.File
 
-import ru.innopolis.ir.project.core.Document
+import ru.innopolis.ir.project.core.{Document, readDocumentsFrom}
 import ru.innopolis.ir.project.core.utils.StringIterableExtension
 
 /**
@@ -34,9 +34,7 @@ object DocumentNormalizer {
 
 		if (!saveDir.exists()) saveDir.mkdir()
 		var i = 0
-		for (normedDoc <- fromDir.listFiles.view
-			.map(Document.fromFile)
-			.map(this (_))) {
+		for (normedDoc <- readDocumentsFrom(fromDir).par.map(this (_))) {
 			if (removeSourceDocs)
 				new File(fromDir, normedDoc.id.toString).delete()
 			normedDoc.saveToFile(saveDir)

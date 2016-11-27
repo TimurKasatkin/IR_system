@@ -44,7 +44,6 @@ object NormalizedDocument {
 		val title = linesIterator.next
 		val url = new URL(linesIterator.next)
 		val `abstract` = if (linesIterator.hasNext) linesIterator.next else ""
-		//		println(s"Reading doc $id of title '$title'")
 		val termToFrequencyMap = if (linesIterator.hasNext) {
 			linesIterator.next.split(" ").view
 				.map(_.split(TermTfSeparator))

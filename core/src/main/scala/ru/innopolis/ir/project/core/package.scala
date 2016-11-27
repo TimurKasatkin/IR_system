@@ -15,6 +15,10 @@ package object core {
 	def readDocumentsFrom(dir: String, maxCount: Int = 0): Array[Document] =
 		readDocumentsFrom(new File(dir), maxCount)
 
+	def readDocumentsFrom(dir: File): Array[Document] = {
+		dir.listFiles.sorted map Document.fromFile
+	}
+
 	def readDocumentsFrom(dir: File, maxCount: Int): Array[Document] = {
 		var docFiles: Array[File] = dir.listFiles.sorted
 		docFiles = if (maxCount > 0) docFiles take maxCount else docFiles
