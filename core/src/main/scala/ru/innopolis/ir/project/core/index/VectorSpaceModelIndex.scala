@@ -19,16 +19,14 @@ import scala.io.Source
 /**
   * @param termDocIdTfTriples tuple in format (term, docId, term's frequency, )
   */
-@SerialVersionUID(123L)
+@SerialVersionUID(950459353L)
 class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
                             val postingsFile: File,
                             numOfTriplesPerBlock: Int = 1000000,
                             removeBlocksFiles: Boolean = true,
                             docTFScheme: TermFrequencyScheme = LogarithmicTFScheme,
                             queryTFScheme: TermFrequencyScheme = BooleanTFScheme,
-                            queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme) extends Serializable {
-
-	val VSM = VectorSpaceModelIndex
+                            queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme) extends Serializable with RankedIndex {
 
 	private val (dictionary, docLengths, docsCount) = {
 		var i = 0
@@ -78,10 +76,10 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 		System.gc()
 
 		// 3. Merge blocks
-		val dictionary = mutable.HashMap.empty[String, TermInfo]
+		val dictionary = mutable.HashMap.empty[String, TermPostingsInfo]
 		using(new BufferedOutputStream(new FileOutputStream(postingsFile, false)))(_.close()) { out =>
 
-			val linesIterators = blocksFiles.map(Source.fromFile(_, VSM.BufferSize).getLines).toList
+			val linesIterators = blocksFiles.map(Source.fromFile(_, VectorSpaceModelIndex.BufferSize).getLines).toList
 			val termInfosPriorQueue = mutable.PriorityQueue[((String, InterimTermInfo), Int)]()(
 				Ordering.by[((String, InterimTermInfo), Int), String](_._1._1).reverse
 			)
@@ -107,10 +105,10 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 					val postingsStrBytes = termInfoToSave.postings
 						.map(postingTuple2string)
 						.mkString(" ")
-						.getBytes(VSM.Charset)
+						.getBytes(VectorSpaceModelIndex.Charset)
 					out.write(postingsStrBytes)
 
-					dictionary(termToSave) = TermInfo(
+					dictionary(termToSave) = TermPostingsInfo(
 						termInfoToSave.docFrequency,
 						curBytesOffset,
 						postingsStrBytes.length
@@ -132,7 +130,7 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 			}
 		}
 
-		(dictionary, docLengths.mapValues(math.sqrt(_)), docsCount)
+		(dictionary, docLengths.mapValues(math.sqrt(_)).toMap, docsCount)
 	}
 
 	/**
@@ -181,13 +179,19 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 		(result.toList, scores.size)
 	}
 
+	def save(file: File): Unit = {
+		using(new ObjectOutputStream(new FileOutputStream(file)))(_.close()) { out =>
+			out.writeObject(this)
+		}
+	}
+
 	private implicit class InputStreamExtension(in: RandomAccessFile) {
 		def readPostings(offset: Int, length: Int): Iterable[Posting] = {
 			val postingsBytesBuffer = new Array[Byte](length)
 			in.skipBytes(offset)
 			in.read(postingsBytesBuffer)
 			in.seek(0)
-			new String(postingsBytesBuffer, VSM.Charset).toPostings
+			new String(postingsBytesBuffer, VectorSpaceModelIndex.Charset).toPostings
 		}
 	}
 
@@ -197,7 +201,7 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 			val term = split(0)
 			val docFrequency = split(1).toInt
 			val postings = split.drop(2).view
-				.map(_.split(VSM.DocIdTermFrequencySeparator))
+				.map(_.split(VectorSpaceModelIndex.DocIdTermFrequencySeparator))
 				.map(spl => (spl(0), spl(1)))
 				.map { case (docIdStr, tfStr) => (docIdStr.toInt, tfStr.toInt) }
 				.toList
@@ -207,16 +211,14 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 
 		def toPostings: Iterable[Posting] = {
 			str.split(' ')
-				.map(_.split(VSM.DocIdTermFrequencySeparator))
+				.map(_.split(VectorSpaceModelIndex.DocIdTermFrequencySeparator))
 				.map(arr => Posting(arr(0).toInt, arr(1).toInt))
 				.toList
 		}
 	}
 
 	private implicit def postingTuple2string(t: (Int, Int)): String =
-		s"${t._1}${VSM.DocIdTermFrequencySeparator}${t._2}"
-
-	private case class TermInfo(docFrequency: Int, postingsByteOffset: Int, postingsByteLength: Int)
+		s"${t._1}${VectorSpaceModelIndex.DocIdTermFrequencySeparator}${t._2}"
 
 	private case class InterimTermInfo(docFrequency: Int = 0, postings: List[(Int, Int)] = List()) {
 		def +(other: InterimTermInfo): InterimTermInfo = InterimTermInfo(
@@ -233,7 +235,8 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 		)
 	}
 
-
+	@SerialVersionUID(3022049705581125008L)
+	private case class TermPostingsInfo(docFrequency: Int, postingsByteOffset: Int, postingsByteLength: Int) extends Serializable
 }
 
 object VectorSpaceModelIndex {
@@ -248,4 +251,19 @@ object VectorSpaceModelIndex {
 	          numOfTriplesPerBlock: Int = 1000000,
 	          removeBlocksFiles: Boolean = true): VectorSpaceModelIndex =
 		new VectorSpaceModelIndex(termDocIdTfTriples, postingsFile, numOfTriplesPerBlock, removeBlocksFiles)
+
+	def fromFile(indexFile: File): VectorSpaceModelIndex = {
+		require(indexFile.exists(), "Specified index object's file doesn't exists")
+		require(indexFile.isFile, "Specified path is a directory")
+
+		val index = using(new ObjectInputStream(new FileInputStream(indexFile)) {
+			override def resolveClass(desc: java.io.ObjectStreamClass): Class[_] = {
+				try { Class.forName(desc.getName, false, getClass.getClassLoader) }
+				catch { case ex: ClassNotFoundException => super.resolveClass(desc) }
+			}
+		})(_.close()) { in =>
+			in.readObject().asInstanceOf[VectorSpaceModelIndex]
+		}
+		index.getOrElse(null)
+	}
 }

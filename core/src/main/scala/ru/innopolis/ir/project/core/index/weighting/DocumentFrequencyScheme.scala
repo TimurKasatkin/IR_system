@@ -9,7 +9,8 @@ package ru.innopolis.ir.project.core.index.weighting
 /**
   * Function that accepts doc frequency and number of docs, and returns doc weight
   */
-trait DocumentFrequencyScheme extends ((Int, Int) => Double) {
+@SerialVersionUID(6512312L)
+trait DocumentFrequencyScheme extends ((Int, Int) => Double) with Serializable {
 	override def apply(df: Int, numOfDocs: Int): Double
 }
 

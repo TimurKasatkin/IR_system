@@ -47,9 +47,7 @@ object NormalizedDocument {
 		val termToFrequencyMap = if (linesIterator.hasNext) {
 			linesIterator.next.split(" ").view
 				.map(_.split(TermTfSeparator))
-				.map(s => {
-					(s(0), s(1).toInt)
-				})
+				.map(s => (s(0), s(1).toInt))
 				.toMap
 		} else Map.empty[String, Int]
 		NormalizedDocument(

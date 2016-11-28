@@ -2,7 +2,7 @@ package ru.innopolis.ir.project.core.preprocessing
 
 import java.io.File
 
-import ru.innopolis.ir.project.core.{Document, readDocumentsFrom}
+import ru.innopolis.ir.project.core.{Document, readDocumentsInParallelFrom}
 import ru.innopolis.ir.project.core.utils.StringIterableExtension
 
 /**
@@ -26,23 +26,18 @@ object DocumentNormalizer {
 
 	def normalizeAllFromAndSaveTo(fromDir: File,
 	                              saveDir: File,
-	                              removeSourceDocs: Boolean = true,
-	                              verbose: Boolean = true,
-	                              verboseFilesCountDelay: Int = 1000): Unit = {
+	                              removeSourceDocs: Boolean = true): Unit = {
 		require(fromDir.exists, "Source folder does not exists.")
 		require(fromDir.isDirectory, "Source path is not a folder.")
 
 		if (!saveDir.exists()) saveDir.mkdir()
-		var i = 0
-		for (normedDoc <- readDocumentsFrom(fromDir).par.map(this (_))) {
-			if (removeSourceDocs)
-				new File(fromDir, normedDoc.id.toString).delete()
+
+		fromDir.listFiles.par foreach { f =>
+			val normedDoc = this(Document.fromFile(f))
 			normedDoc.saveToFile(saveDir)
-			i += 1
-			if (verbose && i > 0 && i % verboseFilesCountDelay == 0)
-				println(s"$i docs processed...")
+			if (removeSourceDocs)
+				f.delete()
 		}
-		if (verbose) println("All docs are processed. ")
 	}
 
 }

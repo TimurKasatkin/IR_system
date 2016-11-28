@@ -14,7 +14,7 @@ import ru.innopolis.ir.project.core.readNormalizedDocumentsFrom
   */
 class CollectionIteratorSpec extends FlatSpec with Matchers {
 
-	val testFilesFolder = new File(getClass.getResource("/collectionIteratorTestDocs").getPath)
+	val testFilesFolder = new File(getClass.getResource("/testCollection").getPath)
 
 	"CollectionIterator" should "read all document triples" in {
 		val result = CollectionIterator(testFilesFolder).toList

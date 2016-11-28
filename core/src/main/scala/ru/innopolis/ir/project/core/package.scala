@@ -4,6 +4,8 @@ import java.io.File
 
 import ru.innopolis.ir.project.core.preprocessing.NormalizedDocument
 
+import scala.collection.parallel.mutable.ParArray
+
 /**
   * @author Timur Kasatkin
   * @date 19.11.16.
@@ -17,6 +19,10 @@ package object core {
 
 	def readDocumentsFrom(dir: File): Array[Document] = {
 		dir.listFiles.sorted map Document.fromFile
+	}
+
+	def readDocumentsInParallelFrom(dir: File): ParArray[Document] = {
+		dir.listFiles.par map Document.fromFile
 	}
 
 	def readDocumentsFrom(dir: File, maxCount: Int): Array[Document] = {

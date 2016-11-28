@@ -2,6 +2,7 @@ package ru.innopolis.ir.project.core.rest
 
 import javax.servlet.ServletContext
 
+import com.typesafe.scalalogging.Logger
 import org.scalatra.LifeCycle
 
 /**
@@ -11,6 +12,8 @@ import org.scalatra.LifeCycle
   * @email t.kasatkin@innopolis.ru
   */
 class ScalatraBootstrap extends LifeCycle {
+
+	val logger = Logger(this.getClass)
 
 	override def init(context: ServletContext): Unit = {
 		//Load first index

@@ -16,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
                                     docTFScheme: TermFrequencyScheme = LogarithmicTFScheme,
                                     queryTFScheme: TermFrequencyScheme = BooleanTFScheme,
-                                    queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme) {
+                                    queryDFScheme: DocumentFrequencyScheme = InvertedDFScheme) extends RankedIndex {
 
 	private val (dictionary, docLengths, docsCount) = {
 

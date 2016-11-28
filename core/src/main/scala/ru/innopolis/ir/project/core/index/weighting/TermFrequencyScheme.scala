@@ -9,7 +9,8 @@ package ru.innopolis.ir.project.core.index.weighting
 /**
   * Function that accepts term frequencies and returns their changed versions
   */
-trait TermFrequencyScheme extends (Iterable[Int] => Iterable[Double]) {
+@SerialVersionUID(213123412412L)
+trait TermFrequencyScheme extends (Iterable[Int] => Iterable[Double]) with Serializable {
 	override def apply(tfs: Iterable[Int]): Iterable[Double]
 }
 

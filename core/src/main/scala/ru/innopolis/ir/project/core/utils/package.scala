@@ -1,5 +1,9 @@
 package ru.innopolis.ir.project.core
 
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
@@ -23,6 +27,20 @@ package object utils {
 
 	implicit class IteratorExtension[A](iter: Iterator[A]) {
 		def doIfHasNext(f: A => Unit): Unit = if (iter.hasNext) f(iter.next())
+	}
+
+	implicit class FileExtension(file: File) {
+
+		def moveAllFilesTo(targetDir: File): Unit = {
+			require(file.exists, "Source doesn't exists")
+			require(file.isDirectory, "Source is not a directory")
+
+			if (!targetDir.exists()) targetDir.mkdir()
+
+			file.listFiles().foreach(f => {
+				Files.move(f.toPath, new File(targetDir, f.getName).toPath, REPLACE_EXISTING)
+			})
+		}
 	}
 
 	def time[R](block: => R): R = {
