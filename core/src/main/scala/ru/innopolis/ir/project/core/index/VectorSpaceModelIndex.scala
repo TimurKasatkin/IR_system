@@ -54,7 +54,9 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 			val sortedDict = SortedMap[String, MutableInterimTermInfo](dictionary.toArray: _*)
 
 			blocksFiles += new File(postingsFile.getPath + i.toString)
-			using(new BufferedWriter(new FileWriter(blocksFiles.last)))(_.close) { writer =>
+			using(new BufferedWriter(new OutputStreamWriter(
+				new FileOutputStream(blocksFiles.last), VectorSpaceModelIndex.Charset
+			)))(_.close) { writer =>
 				for (s <- sortedDict.view map {
 					case (term, interimTermInfo) =>
 						s"$term ${interimTermInfo.docFrequency} ${

@@ -83,6 +83,18 @@ object IRSystemCoreRestService extends App {
 			.optional()
 			.action((p, c) => c.copy(port = p))
 			.text("Port on which start listening search requests. Default - 8081. ")
+		opt[Int]('t', "norming_threads")
+		    .optional()
+		    .action((t, c) => c.copy(numberOfNormalizingThreads = t))
+		    .validate {
+			    case t if 1 <= t && t <= Runtime.getRuntime.availableProcessors() =>
+				    success
+			    case _ =>
+				    failure("<norming_threads> should be between 1 and number of your computer's cores " +
+					    s"(here it is ${Runtime.getRuntime.availableProcessors()}) inclusively")
+		    }
+			.text("Number of threads to use for documents normalization. " +
+				"Default - number of your computer's cores divided by 2.")
 	}
 
 	private val logger = Logger("IR System Core's REST service APP")
@@ -133,7 +145,11 @@ object IRSystemCoreRestService extends App {
 					logger.info("There are some not yet normalized docs. " +
 						"They will be normalized and index will be built from them.")
 					logger.info(s"Normalizing ${docsDir.listFiles.length} docs...")
-					DocumentNormalizer.normalizeRemovingInParallelAllFromAndSaveTo(docsDir, indexedDocsDir)
+					DocumentNormalizer.normalizeRemovingInParallelAllFromAndSaveTo(
+						docsDir,
+						indexedDocsDir,
+						config.numberOfNormalizingThreads
+					)
 					logger.info("Building index ...")
 					createNewIndex(indexedDocsDir, workingDir)
 				} else {
@@ -145,7 +161,7 @@ object IRSystemCoreRestService extends App {
 			if (SearchIndex.exists) SearchIndex.current.save(indexObjectFile)
 
 			val scheduledDocsNormalizationTask = scheduledExecutorService.scheduleWithFixedDelay(
-				new DocsNormalizationTask(docsDir, newNormalizedDocsDir),
+				new DocsNormalizationTask(docsDir, newNormalizedDocsDir, config.numberOfNormalizingThreads),
 				config.docNormalizationDelay._1,
 				config.docNormalizationDelay._1,
 				config.docNormalizationDelay._2
@@ -231,7 +247,9 @@ object IRSystemCoreRestService extends App {
 		}
 	}
 
-	private class DocsNormalizationTask(docsDir: File, newNormalizedDocsDir: File) extends Runnable {
+	private class DocsNormalizationTask(docsDir: File,
+	                                    newNormalizedDocsDir: File,
+	                                    numberOfNormalizingThreads: Int) extends Runnable {
 
 		private val normalizationTaskLogger = Logger("Docs Normalization Task")
 
@@ -242,7 +260,8 @@ object IRSystemCoreRestService extends App {
 				normalizationTaskLogger.info(s"Normalizing ${docsFiles.length} documents...")
 				DocumentNormalizer.normalizeRemovingInParallelAllFromAndSaveTo(
 					docsDir,
-					newNormalizedDocsDir
+					newNormalizedDocsDir,
+					numberOfNormalizingThreads
 				)
 				normalizationTaskLogger.info("Finished.")
 			} else
@@ -256,7 +275,8 @@ object IRSystemCoreRestService extends App {
 		                         docNormalizationDelay: Duration = Duration(3, TimeUnit.SECONDS),
 		                         reindexingDelay: Duration = Duration(15, TimeUnit.SECONDS),
 		                         minNumberOfNewDocs: Int = 1000,
-		                         port: Int = 8081
+		                         port: Int = 8081,
+		                         numberOfNormalizingThreads: Int = Runtime.getRuntime.availableProcessors() / 2 | 1
 	                         )
 
 }
