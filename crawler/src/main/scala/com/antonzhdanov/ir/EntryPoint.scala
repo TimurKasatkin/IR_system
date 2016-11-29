@@ -8,7 +8,7 @@ import java.io.File
 object EntryPoint {
 
   private case class Config(threads: Int = Runtime.getRuntime.availableProcessors(), out: String = "./",
-                            interval: Int = 1, crawlCount: Int = 1000000)
+                            interval: Int = 1, crawlCount: Int = 1250000)
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[Config]("wikicrawler") {

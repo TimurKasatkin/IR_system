@@ -17,6 +17,9 @@ class Document(pageUrl: String, data: String, links: Iterable[String]) {
     val file: File = new File(path)
     var fileWriter: FileWriter = null
 
+    if (file.exists())
+      file.delete()
+
     try {
       fileWriter = new FileWriter(file)
       fileWriter.write(data)
