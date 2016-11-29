@@ -10,10 +10,13 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.webapp.WebAppContext
 import org.scalatra.servlet.ScalatraListener
 import ru.innopolis.ir.project.core.index.VectorSpaceModelIndex
-import ru.innopolis.ir.project.core.preprocessing.{DocumentNormalizer, QueryNormalizer}
+import ru.innopolis.ir.project.core.preprocessing.DocumentNormalizer
 import ru.innopolis.ir.project.core.utils.{CollectionIterator, FileExtension}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success}
 
 /**
   * @author Timur Kasatkin
@@ -203,9 +206,24 @@ object IRSystemCoreRestService extends App {
 
 					reindexingTaskLogger.info("Saving new index...")
 					newIndex.save(indexObjectFile)
+					var oldIndexPostingsFile: File = null
+					if (SearchIndex.exists)
+						oldIndexPostingsFile = SearchIndex.current.postingsFile
 					SearchIndex.current = newIndex
 
 					reindexingTaskLogger.info("Finished. New index applied.")
+
+					if (oldIndexPostingsFile != null) {
+						Future {
+							Thread.sleep(3000) //wait for previous queries to end
+							oldIndexPostingsFile.delete()
+						} onComplete {
+							case Success(_) =>
+								reindexingTaskLogger.info("Old index postings file removed")
+							case Failure(t) =>
+								reindexingTaskLogger.error("Error trying to remove old index' postings file", t)
+						}
+					}
 				} else
 					reindexingTaskLogger.info("There are not enough new documents for rebuilding index.")
 			} else

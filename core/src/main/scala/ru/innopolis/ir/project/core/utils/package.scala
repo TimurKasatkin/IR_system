@@ -52,7 +52,12 @@ package object utils {
 		result
 	}
 
-	def using[A, B](resource: A)(cleanup: A => Unit)(doWork: A => B): Try[B] = {
+	implicit val exceptionHandler: Exception => Unit = (e) => e.printStackTrace()
+
+	def using[A, B](resource: A)
+	               (cleanup: A => Unit)
+	               (doWork: A => B)
+	               (implicit handle: Exception => Unit = exceptionHandler): Try[B] = {
 		try {
 			Success(doWork(resource))
 		} catch {
@@ -65,7 +70,7 @@ package object utils {
 					cleanup(resource)
 				}
 			} catch {
-				case e: Exception => e.printStackTrace() // should be logged
+				case e: Exception => handle(e)
 			}
 		}
 	}
