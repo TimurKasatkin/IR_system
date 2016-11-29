@@ -111,6 +111,7 @@ object IRSystemCoreRestService extends App {
 
 			val indexObjectFile = new File(workingDir, IndexObjectFileName)
 
+			SearchIndex.indexedDocsDir = indexedDocsDir
 			SearchIndex.current = if (indexObjectFile.exists()) {
 				logger.info("Previous index' object file detected. Reading it...")
 				VectorSpaceModelIndex.fromFile(indexObjectFile)
@@ -166,7 +167,7 @@ object IRSystemCoreRestService extends App {
 
 			context.setContextPath("/")
 			context.setResourceBase(".")
-			context.setInitParameter(ScalatraListener.LifeCycleKey, "ru.innopolis.ir.project.core.rest.ScalatraBootstrap")
+			context.setInitParameter(ScalatraListener.LifeCycleKey, classOf[ScalatraBootstrap].getName)
 			context.setEventListeners(Array(new ScalatraListener))
 
 			server.setHandler(context)

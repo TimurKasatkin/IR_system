@@ -142,6 +142,8 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 	  *         2) total number of results
 	  */
 	def search(queryTokens: Iterable[String], pageNumber: Int, pageLimit: Int = 100): (List[SearchResult], Int) = {
+		searchRequirements(queryTokens, pageNumber, pageLimit)
+
 		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
 
 		val tokens = queryTokens.filter(dictionary contains)

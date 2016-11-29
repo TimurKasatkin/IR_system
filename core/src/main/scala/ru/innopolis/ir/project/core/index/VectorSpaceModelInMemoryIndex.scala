@@ -48,6 +48,8 @@ class VectorSpaceModelInMemoryIndex(docs: Iterable[NormalizedDocument],
 	}
 
 	def search(queryTokens: Iterable[String], pageNumber: Int, pageLimit: Int = 100): (List[SearchResult], Int) = {
+		searchRequirements(queryTokens, pageNumber, pageLimit)
+
 		val scores: mutable.Map[Int, Double] = mutable.Map.empty.withDefaultValue(0)
 
 		val tokens = queryTokens.filter(dictionary contains)

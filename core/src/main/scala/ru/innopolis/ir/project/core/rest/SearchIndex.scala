@@ -1,6 +1,9 @@
 package ru.innopolis.ir.project.core.rest
 
+import java.io.File
+
 import ru.innopolis.ir.project.core.index.VectorSpaceModelIndex
+import ru.innopolis.ir.project.core.preprocessing.NormalizedDocument
 
 /**
   * @author Timur Kasatkin 
@@ -8,11 +11,13 @@ import ru.innopolis.ir.project.core.index.VectorSpaceModelIndex
   * @email aronwest001@gmail.com
   * @email t.kasatkin@innopolis.ru
   */
-object SearchIndex {
+private[rest] object SearchIndex {
 
 	type IndexType = VectorSpaceModelIndex
 
 	@volatile private var _currentIndex: IndexType = _
+
+	private var _indexedDocsDir: File = _
 
 	def current: IndexType = _currentIndex
 
@@ -21,4 +26,13 @@ object SearchIndex {
 	}
 
 	def exists: Boolean = _currentIndex != null
+
+	def indexedDocsDir: File = _indexedDocsDir
+
+	def indexedDocsDir_=(indexedDocsDir: File): Unit = {
+		_indexedDocsDir = indexedDocsDir
+	}
+
+	def documentsByIds(ids: Iterable[Int]): Iterable[NormalizedDocument] =
+		ids.map(id => NormalizedDocument.fromFile(new File(_indexedDocsDir, id.toString)))
 }
