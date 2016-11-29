@@ -1,4 +1,4 @@
-package com.antonzhdanov.ir
+package ru.innopolis.ir.project.crawler
 
 import java.io.{File, FileWriter, IOException}
 

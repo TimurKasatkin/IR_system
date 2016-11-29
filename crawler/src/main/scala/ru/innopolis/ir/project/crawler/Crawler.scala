@@ -1,4 +1,4 @@
-package com.antonzhdanov.ir
+package ru.innopolis.ir.project.crawler
 
 import java.io.{File, FileWriter, IOException}
 import java.util.concurrent._
@@ -23,6 +23,7 @@ object Crawler {
   private val queuedDocuments: mutable.TreeSet[String] = new mutable.TreeSet[String]()
 
   private var CRAWL_COUNT: Int = _
+  private var TIME_INTERVAL: Int = _
 
   private val TAGS_TO_SEARCH = List("p", "ul", "h3 mw-headline", "h2 mw-headline", "table")
   private val SPECIAL_PREFIXES = List("File:", "User:", "Wikipedia:", "MediaWiki:", "Template:", "Help:", "Book:",
@@ -38,11 +39,12 @@ object Crawler {
     completionService.submit(new CrawlTask(BASE_URL + page, TAGS_TO_SEARCH))
   }
 
-  def start(workingDir: String, numberOfThreads: Int, crawlCount: Int): Unit = {
+  def start(workingDir: String, numberOfThreads: Int, crawlCount: Int, timeInterval: Int): Unit = {
     SYSTEM_DIR = workingDir + File.separator
     OUTPUT_DIR = SYSTEM_DIR + "documents" + File.separator
     NUMBER_OF_THREADS = numberOfThreads
     CRAWL_COUNT = crawlCount
+    TIME_INTERVAL = timeInterval
 
     val sysDir: File = new File(OUTPUT_DIR)
     if (!sysDir.exists())
@@ -87,7 +89,7 @@ object Crawler {
                 }
               })
 
-            if (completedCount.get() % 5000 == 0)
+            if ((System.currentTimeMillis() / 1000l) % TIME_INTERVAL == 0)
               saveState()
           }
         }
@@ -122,6 +124,9 @@ object Crawler {
       fileWriter = new FileWriter(file)
       completedDocuments.foreach((page: String) => stringBuilder.append(page + "\n"))
       fileWriter.write(stringBuilder.toString())
+
+      println("State has been saved")
+      Thread.sleep(1000)
     } catch {
       case e: IOException =>
     } finally {
