@@ -129,7 +129,7 @@ object IRSystemCoreRestService extends App {
 					logger.info("There are some not yet normalized docs. " +
 						"They will be normalized and index will be built from them.")
 					logger.info(s"Normalizing ${docsDir.listFiles.length} docs...")
-					DocumentNormalizer.normalizeAllFromAndSaveTo(docsDir, indexedDocsDir)
+					DocumentNormalizer.normalizeRemovingInParallelAllFromAndSaveTo(docsDir, indexedDocsDir)
 					logger.info("Building index ...")
 					createNewIndex(indexedDocsDir, workingDir)
 				} else {
@@ -221,7 +221,7 @@ object IRSystemCoreRestService extends App {
 			val docsFiles = docsDir.listFiles
 			if (docsFiles.nonEmpty) {
 				normalizationTaskLogger.info(s"Normalizing ${docsFiles.length} documents...")
-				DocumentNormalizer.normalizeAllFromAndSaveTo(
+				DocumentNormalizer.normalizeRemovingInParallelAllFromAndSaveTo(
 					docsDir,
 					newNormalizedDocsDir
 				)

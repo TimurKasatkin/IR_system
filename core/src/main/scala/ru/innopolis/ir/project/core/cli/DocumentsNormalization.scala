@@ -21,17 +21,23 @@ object DocumentsNormalization {
 			arg[File]("<save_folder>")
 				.action((f, c) => c.copy(processedSaveFolder = f))
 				.text("Path to folder where normalized documents should be saved")
+			opt[Boolean]('r', "rem_source")
+				.action((r, c) => c.copy(removeSourceDocs = r))
+				.text("Whether to remove source dos after normalization. Default - false.")
 		}
 		parser.parse(args, Config()) match {
 			case Some(config) =>
-				time(DocumentNormalizer.normalizeAllFromAndSaveTo(
+				time(DocumentNormalizer.normalizeInParallelAllFromAndSaveTo(
 					config.sourceDocsFolder,
-					config.processedSaveFolder
+					config.processedSaveFolder,
+					removeSourceDocs = config.removeSourceDocs
 				))
 			case None =>
 		}
 	}
 
-	private case class Config(sourceDocsFolder: File = null, processedSaveFolder: File = null)
+	private case class Config(sourceDocsFolder: File = null,
+	                          processedSaveFolder: File = null,
+	                          removeSourceDocs: Boolean = false)
 
 }

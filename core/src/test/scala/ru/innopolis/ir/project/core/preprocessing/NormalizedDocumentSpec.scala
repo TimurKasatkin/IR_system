@@ -17,7 +17,6 @@ import scala.io.Source
 class NormalizedDocumentSpec
 	extends FlatSpec
 		with Matchers
-		with BeforeAndAfter
 		with BeforeAndAfterAll
 		with BeforeAndAfterEach {
 
@@ -41,45 +40,12 @@ class NormalizedDocumentSpec
 		testDocDir.mkdir()
 	}
 
-	"NormalizedDocument" should "be correctly read using 'readFrom'" in {
-		val testFile1 = new File(getClass.getResource("/testNormalizedDocs/1").toURI)
-		val result = NormalizedDocument.fromFile(testFile1)
-		result should have(
-			'id (1),
-			'title ("Test doc"),
-			'abstract ("I am a test doc!")
-		)
-		result.url.toString shouldBe "https://en.wikipedia.org/wiki/maybe_exists"
-		result.termToFrequencyMap should contain only(
-			"i" -> 2,
-			"am" -> 1,
-			"a" -> 1,
-			"test" -> 1,
-			"doc" -> 1,
-			"yep" -> 1,
-			"have" -> 1,
-			"an" -> 1,
-			"empty" -> 1,
-			"line" -> 1
-		)
-	}
+	"NormalizedDocument" should "be correctly saved using \"saveTo\" and read using \"fromFile\"" in {
+		testDoc.saveTo(testDocDir)
 
-	it should "be saved to file in right format" in {
-		testDoc.saveToFile(testDocDir)
+		val result = NormalizedDocument.fromFile(new File(testDocDir, testDoc.id.toString))
 
-		val resultFile = new File(testDocDir, testDoc.id.toString)
-
-		testDocDir.listFiles should contain(resultFile)
-		val lines = Source.fromFile(resultFile).getLines
-		lines.next shouldBe testDoc.title
-		lines.next shouldBe testDoc.url.toString
-		lines.next shouldBe testDoc.`abstract`
-		lines.next shouldBe (testDoc.termToFrequencyMap.map { case (term, tf) => s"$term${NormalizedDocument.TermTfSeparator}$tf" } mkString " ")
-	}
-
-	after {
-		val resFile = new File(testDocDir, testDoc.id.toString)
-		if (resFile.exists) resFile.delete()
+		result shouldEqual testDoc
 	}
 
 	override protected def afterEach(): Unit = {
