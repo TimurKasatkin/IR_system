@@ -26,6 +26,7 @@ import scala.util.{Failure, Success}
   */
 object IRSystemCoreRestService extends App {
 
+	final val Port: Int = 8081
 	private final val DocsDirName: String = "documents"
 	private final val NewNormalizedDocsDirName: String = "new_normalized_docs"
 	private final val AlreadyIndexedDocsDirName: String = "indexed_docs"
@@ -79,10 +80,6 @@ object IRSystemCoreRestService extends App {
 				case _ => success
 			}
 			.text("Minimal number of new normalized documents for rebuilding index. Default - 1000.")
-		opt[Int]('p', "port")
-			.optional()
-			.action((p, c) => c.copy(port = p))
-			.text("Port on which start listening search requests. Default - 8081. ")
 		opt[Int]('t', "norming_threads")
 		    .optional()
 		    .action((t, c) => c.copy(numberOfNormalizingThreads = t))
@@ -180,8 +177,10 @@ object IRSystemCoreRestService extends App {
 				config.reindexingDelay._2
 			)
 
+			logger.info("Starting http server...")
+
 			//CONFIGURING REST SERVER
-			val server = new Server(config.port)
+			val server = new Server(Port)
 			val context = new WebAppContext()
 
 			context.setContextPath("/")
@@ -275,7 +274,6 @@ object IRSystemCoreRestService extends App {
 		                         docNormalizationDelay: Duration = Duration(3, TimeUnit.SECONDS),
 		                         reindexingDelay: Duration = Duration(15, TimeUnit.SECONDS),
 		                         minNumberOfNewDocs: Int = 1000,
-		                         port: Int = 8081,
 		                         numberOfNormalizingThreads: Int = Runtime.getRuntime.availableProcessors() / 2 | 1
 	                         )
 
