@@ -1,11 +1,10 @@
 package ru.innopolis.ir.project.crawler
 
-import java.io.{BufferedWriter, File, FileWriter, IOException}
+import java.io._
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
 import scala.collection.mutable
-import scala.io.Source
 
 /**
   * Created by Anton on 17.11.2016.
@@ -19,8 +18,8 @@ object Crawler {
   private val COMPLETED_NAME = "completed"
 
   private val completedCount: AtomicInteger = new AtomicInteger(0)
-  private val completedDocuments: mutable.TreeSet[String] = new mutable.TreeSet[String]()
-  private val queuedDocuments: mutable.TreeSet[String] = new mutable.TreeSet[String]()
+  private var completedDocuments: mutable.TreeSet[String] = new mutable.TreeSet[String]()
+  private var queuedDocuments: mutable.TreeSet[String] = new mutable.TreeSet[String]()
 
   private var CRAWL_COUNT: Int = _
   private var TIME_INTERVAL: Int = _
@@ -102,50 +101,71 @@ object Crawler {
   def documentsInQueue: Int = completedDocuments.size
 
   private def saveState(): Unit = {
+    var fileOutputStream: FileOutputStream = null
+    var objectOutputStream: ObjectOutputStream = null
     var file: File = null
-    var fileWriter: FileWriter = null
-    var bufferedWriter: BufferedWriter = null
+
     try {
       file = new File(SYSTEM_DIR + QUEUE_NAME)
       if (file.exists())
         file.delete()
 
-      fileWriter = new FileWriter(file)
-      bufferedWriter = new BufferedWriter(fileWriter)
-      queuedDocuments.foreach((page: String) => bufferedWriter.append(page + '\n'))
+      fileOutputStream = new FileOutputStream(file)
+      objectOutputStream = new ObjectOutputStream(fileOutputStream)
 
-      bufferedWriter.close()
-      fileWriter.close()
+      objectOutputStream.writeObject(queuedDocuments)
+      objectOutputStream.close()
+      fileOutputStream.close()
 
       file = new File(SYSTEM_DIR + COMPLETED_NAME)
       if (file.exists())
         file.delete()
 
-      fileWriter = new FileWriter(file)
-      bufferedWriter = new BufferedWriter(fileWriter)
-
-      completedDocuments.foreach((page: String) => bufferedWriter.append(page + '\n'))
+      fileOutputStream = new FileOutputStream(file)
+      objectOutputStream = new ObjectOutputStream(fileOutputStream)
+      objectOutputStream.writeObject(completedDocuments)
 
       println("State has been saved")
       Thread.sleep(1000)
     } catch {
       case e: IOException =>
     } finally {
-      bufferedWriter.close()
-      fileWriter.close()
+      fileOutputStream.close()
+      objectOutputStream.close()
     }
   }
 
-
   private def loadState(): Unit = {
-    var file: File = new File(SYSTEM_DIR + QUEUE_NAME)
-    if (file.exists())
-      Source.fromFile(file).getLines().foreach((page: String) => submit(page))
+    var file: File = null
+    var fileInputStream: FileInputStream = null
+    var objectInputStream: ObjectInputStream = null
 
     file = new File(SYSTEM_DIR + COMPLETED_NAME)
-    if (file.exists())
-      Source.fromFile(file).getLines().foreach((page: String) => completedDocuments.add(page))
+    if (file.exists()) {
+      try {
+        fileInputStream = new FileInputStream(file)
+        objectInputStream = new ObjectInputStream(fileInputStream)
+        completedDocuments = objectInputStream.readObject().asInstanceOf[mutable.TreeSet[String]]
+        completedCount.set(completedDocuments.size)
+      } catch {
+        case e: IOException =>
+      } finally {
+        objectInputStream.close()
+      }
+    }
 
-    completedCount.set(completedDocuments.size)
+    file = new File(SYSTEM_DIR + QUEUE_NAME)
+    if (file.exists()) {
+      try {
+        fileInputStream = new FileInputStream(file)
+        objectInputStream = new ObjectInputStream(fileInputStream)
+        queuedDocuments = objectInputStream.readObject().asInstanceOf[mutable.TreeSet[String]]
+        queuedDocuments.foreach(submit)
+      } catch {
+        case e: IOException =>
+      } finally {
+        objectInputStream.close()
+      }
+    }
   }
 }
