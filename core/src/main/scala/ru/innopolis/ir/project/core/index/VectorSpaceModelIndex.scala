@@ -81,10 +81,12 @@ class VectorSpaceModelIndex(termDocIdTfTriples: Iterator[(String, Int, Int)],
 		val dictionary = mutable.HashMap.empty[String, TermPostingsInfo]
 		using(new BufferedOutputStream(new FileOutputStream(postingsFile, false)))(_.close()) { out =>
 
-			val linesIterators = blocksFiles.map(Source.fromFile(_, VectorSpaceModelIndex.BufferSize).getLines).toList
-			val termInfosPriorQueue = mutable.PriorityQueue[((String, InterimTermInfo), Int)]()(
-				Ordering.by[((String, InterimTermInfo), Int), String](_._1._1).reverse
-			)
+      val charsetName = VectorSpaceModelIndex.Charset.toString
+      val bufferSize = VectorSpaceModelIndex.BufferSize
+      val linesIterators = blocksFiles.map(Source.fromFile(_, charsetName, bufferSize).getLines).toList
+      val termInfosPriorQueue = mutable.PriorityQueue[((String, InterimTermInfo), Int)]()(
+        Ordering.by[((String, InterimTermInfo), Int), String](_._1._1).reverse
+      )
 
 			termInfosPriorQueue ++= linesIterators.view
 				.map(_.next())
