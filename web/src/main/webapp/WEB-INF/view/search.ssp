@@ -1,34 +1,41 @@
 #import(ru.innopolis.service.HumanSearchResult)
 <%@ val query: String %>
-<%@ val page: Integer %>
-<%@ val pages: Integer %>
-<%@ val totalResults: Integer %>
-<%@ import val results: List[HumanSearchResult] %>
+<%@ val currentPage: Int %>
+<%@ val firstPage: Int %>
+<%@ val lastPage: Int %>
+<%@ val pages: Int %>
+<%@ val totalResults: Int %>
+<%@ import
+val results: List[HumanSearchResult] %>
 <a href="/index"><h1 class="search-name">Gooble</h1></a>
 <form method="get" action="/search" style="width: 100%; text-align: center;">
-    <div class="row">
-    <div class="col-lg-9">
-        <div class="input-group input-group-lg">
-            <input type="text" class="form-control" placeholder="Search query..." name="query" value="<%= query %>">
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="submit">Search</button>
-                </span>
-            </div><!-- /input-group -->
-        </div><!-- /.col-lg-6 -->
-    </div><!-- /.row -->
-    <div class="col-lg-3"></div>
+<div class="row">
+<div class="col-lg-9">
+    <div class="input-group input-group-lg">
+        <input type="text" class="form-control" placeholder="Search query..." name="query" value="<%= query %>">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="submit">Search</button>
+            </span>
+        </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+</div><!-- /.row -->
+<div class="col-lg-3"></div>
 </form>
 <i style="color: rgba(145, 145, 145, 0.99); width: 100%; margin-top: 5px; margin-bottom: 5px; font-weight: 600; float: left;">Total results: ${totalResults}</i>
 #for (result <- results)
-    <a href="${result.link}"><h3>${result.title}</h3></a>
-    <p>${result.docAbstract}</p>
+    <a href="${result.url}" target="_blank"><h3>${result.title}</h3></a>
+    <p>${result.`abstract`}</p>
 #end
-<nav aria-label="">
-<ul class="pagination">
-    <li class=""><a href="/search?query=${query}&page=${math.max(page-1, 1)}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
-    #for (p <- 1 to pages)
-        <li class="#if (page == p) active #end"><a href="/search?query=${query}&page=${p}">${p} <span class="sr-only"></span></a></li>
-    #end
-    <li class=""><a href="/search?query=${query}&page=${math.min(page+1, pages)}" aria-label="Previous"><span aria-hidden="true">	&raquo;</span></a></li>
-</ul>
-</nav>
+#if (totalResults > 0)
+    <nav aria-label="">
+    <ul class="pagination">
+        <li class=""><a href="/search?query=${query}&page=1" aria-label="Previous"><span aria-hidden="true">&laquo;&laquo;</span></a></li>
+        <li class=""><a href="/search?query=${query}&page=${math.max(currentPage - 1, 1)}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+        #for (p <- firstPage to lastPage)
+            <li class="#if (currentPage == p) active #end"><a href="/search?query=${query}&page=${p}">${p} <span class="sr-only"></span></a></li>
+        #end
+        <li class=""><a href="/search?query=${query}&page=${math.min(currentPage + 1, pages)}" aria-label="Previous"><span aria-hidden="true">    &raquo;</span></a></li>
+        <li class=""><a href="/search?query=${query}&page=${pages}" aria-label="Next"><span aria-hidden="true">&raquo;&raquo;</span></a></li>
+    </ul>
+    </nav>
+#end

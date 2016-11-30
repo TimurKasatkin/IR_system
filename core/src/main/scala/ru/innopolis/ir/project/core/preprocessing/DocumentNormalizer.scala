@@ -17,13 +17,17 @@ import scala.concurrent.ExecutionContext
   */
 object DocumentNormalizer {
 
+	private final val MaxDocAbstractLength: Int = 1000
+
 	def apply(doc: Document): NormalizedDocument = {
 		val termToFrequency: Map[String, Int] = StringNormalizer(doc.text).wordCounts
 		NormalizedDocument(
 			id = doc.id,
 			title = doc.title,
 			url = doc.url,
-			`abstract` = doc.`abstract`,
+			`abstract` = if (doc.`abstract`.length > MaxDocAbstractLength: @inline) {
+				doc.`abstract`.substring(0, MaxDocAbstractLength: @inline) + "..."
+			} else doc.`abstract`,
 			termToFrequencyMap = termToFrequency
 		)
 	}
