@@ -1,6 +1,6 @@
 package ru.innopolis.ir.project.crawler
 
-import java.io.{File, FileWriter, IOException}
+import java.io.{BufferedWriter, File, FileWriter, IOException}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -104,35 +104,38 @@ object Crawler {
   private def saveState(): Unit = {
     var file: File = null
     var fileWriter: FileWriter = null
-    val stringBuilder: StringBuilder = new mutable.StringBuilder()
+    var bufferedWriter: BufferedWriter = null
     try {
       file = new File(SYSTEM_DIR + QUEUE_NAME)
       if (file.exists())
         file.delete()
 
       fileWriter = new FileWriter(file)
-      queuedDocuments.foreach((page: String) => stringBuilder.append(page + "\n"))
-      fileWriter.write(stringBuilder.toString())
+      bufferedWriter = new BufferedWriter(fileWriter)
+      queuedDocuments.foreach((page: String) => bufferedWriter.append(page + '\n'))
 
+      bufferedWriter.close()
       fileWriter.close()
-      stringBuilder.clear()
 
       file = new File(SYSTEM_DIR + COMPLETED_NAME)
       if (file.exists())
         file.delete()
 
       fileWriter = new FileWriter(file)
-      completedDocuments.foreach((page: String) => stringBuilder.append(page + "\n"))
-      fileWriter.write(stringBuilder.toString())
+      bufferedWriter = new BufferedWriter(fileWriter)
+
+      completedDocuments.foreach((page: String) => bufferedWriter.append(page + '\n'))
 
       println("State has been saved")
       Thread.sleep(1000)
     } catch {
       case e: IOException =>
     } finally {
+      bufferedWriter.close()
       fileWriter.close()
     }
   }
+
 
   private def loadState(): Unit = {
     var file: File = new File(SYSTEM_DIR + QUEUE_NAME)
