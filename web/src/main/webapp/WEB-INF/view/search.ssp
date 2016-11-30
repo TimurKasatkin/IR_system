@@ -1,8 +1,10 @@
 #import(ru.innopolis.service.HumanSearchResult)
 <%@ val query: String %>
-<%@ val page: Integer %>
-<%@ val pages: Integer %>
-<%@ val totalResults: Integer %>
+<%@ val currentPage: Int %>
+<%@ val firstPage: Int %>
+<%@ val lastPage: Int %>
+<%@ val pages: Int %>
+<%@ val totalResults: Int %>
 <%@ import
 val results: List[HumanSearchResult] %>
 <a href="/index"><h1 class="search-name">Gooble</h1></a>
@@ -21,17 +23,19 @@ val results: List[HumanSearchResult] %>
 </form>
 <i style="color: rgba(145, 145, 145, 0.99); width: 100%; margin-top: 5px; margin-bottom: 5px; font-weight: 600; float: left;">Total results: ${totalResults}</i>
 #for (result <- results)
-    <a href="${result.url}"><h3>${result.title}</h3></a>
+    <a href="${result.url}" target="_blank"><h3>${result.title}</h3></a>
     <p>${result.`abstract`}</p>
 #end
 #if (totalResults > 0)
     <nav aria-label="">
     <ul class="pagination">
-        <li class=""><a href="/search?query=${query}&page=${math.max(page - 1, 1)}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
-        #for (p <- 1 to pages)
-            <li class="#if (page == p) active #end"><a href="/search?query=${query}&page=${p}">${p} <span class="sr-only"></span></a></li>
+        <li class=""><a href="/search?query=${query}&page=1" aria-label="Previous"><span aria-hidden="true">&laquo;&laquo;</span></a></li>
+        <li class=""><a href="/search?query=${query}&page=${math.max(currentPage - 1, 1)}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+        #for (p <- firstPage to lastPage)
+            <li class="#if (currentPage == p) active #end"><a href="/search?query=${query}&page=${p}">${p} <span class="sr-only"></span></a></li>
         #end
-        <li class=""><a href="/search?query=${query}&page=${math.min(page + 1, pages)}" aria-label="Previous"><span aria-hidden="true">    &raquo;</span></a></li>
+        <li class=""><a href="/search?query=${query}&page=${math.min(currentPage + 1, pages)}" aria-label="Previous"><span aria-hidden="true">    &raquo;</span></a></li>
+        <li class=""><a href="/search?query=${query}&page=${pages}" aria-label="Next"><span aria-hidden="true">&raquo;&raquo;</span></a></li>
     </ul>
     </nav>
 #end

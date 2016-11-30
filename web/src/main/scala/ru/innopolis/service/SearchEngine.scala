@@ -1,4 +1,5 @@
 package ru.innopolis.service
+
 import java.net.URLEncoder
 
 import com.typesafe.scalalogging.Logger
@@ -18,11 +19,18 @@ object SearchEngine {
     (response._1, resultsNumber, pages)
   }
 
-  private def parseJSON(json: String) : (List[HumanSearchResult], Int) = {
-    logger.info(json)
+  private def parseJSON(json: String): (List[HumanSearchResult], Int) = {
+//    logger.info(json)
     val _json = parse(json)
-    val results = (_json \ "docs" ).extract[List[HumanSearchResult]]
+    val results = (_json \ "docs").extract[List[HumanSearchResult]]
     val resNum = (_json \ "totalNumberOfResults").extract[Integer]
     return (results, resNum)
   }
+
+  def getPagination(currentPage: Int, totalPages: Int): (Int, Int) = {
+    val firstPage = math.max(currentPage - 5, 1)
+    val lastPage = math.min(firstPage + 9, totalPages)
+    (firstPage, lastPage)
+  }
+
 }

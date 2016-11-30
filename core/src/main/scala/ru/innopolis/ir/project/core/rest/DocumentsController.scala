@@ -44,6 +44,7 @@ class DocumentsController extends ScalatraServlet with JacksonJsonSupport {
 
 		if (SearchIndex.exists) {
 			val (result, totalCount) = SearchIndex.current.search(QueryNormalizer(query), pageNumber, pageLimit)
+//			SearchResult(testDocs.toList, testDocs.size)
 			SearchResult(
 				SearchIndex.documentsByIds(result.view.map(_.docId))
 					.map(doc => Document(doc.title, doc.`abstract`, doc.url.toString)).toList,
